@@ -17,20 +17,40 @@ namespace I2LocPatch
     {
         public static I2LocPatchPlugin Instance;
         public ConfigEntry<string> TargetLanguage;
-        public ConfigEntry<bool> DevMode;
+        public ConfigEntry<bool> DevMode, DontLoadCsvOnDevMode;
         public ConfigEntry<bool> CommaSepWhenLoad;
 
         void Awake()
         {
             Instance = this;
             DevMode = Config.Bind<bool>("Dev", "DevMode", false, "开发模式时，按下Ctrl+Keypad1进行Dump文本");
+            DontLoadCsvOnDevMode = Config.Bind<bool>("Dev", "DontLoadCsvOnDevMode", true, "开发模式时，不自动加载翻译文本，而是使用Ctrl+Keypad2手动加载");
             TargetLanguage = Config.Bind<string>("config", "TargetLanguage", "Chinese", "目标语言");
             CommaSepWhenLoad = Config.Bind<bool>("config", "CommaSepWhenLoad", true, "在加载csv时使用逗号分隔而不是制表符");
         }
 
         void Start()
         {
+            if (DevMode.Value && DontLoadCsvOnDevMode.Value)
+            {
+                return;
+            }
             Invoke("LoadCsv", 1f);
+        }
+
+        void Update()
+        {
+            if (DevMode.Value)
+            {
+                if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad1))
+                {
+                    DumpAllLocRes();
+                }
+                if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad2))
+                {
+                    LoadCsv();
+                }
+            }
         }
 
         public void LoadCsv()
@@ -93,17 +113,6 @@ namespace I2LocPatch
         public static void LogError(string log)
         {
             Instance.Logger.LogError(log);
-        }
-
-        void Update()
-        {
-            if (DevMode.Value)
-            {
-                if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad1))
-                {
-                    DumpAllLocRes();
-                }
-            }
         }
 
         public void DumpAllLocRes()

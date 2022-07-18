@@ -105,11 +105,11 @@ namespace I2LocPatch
                         {
                             I2LocPatchPlugin.LogInfo($"index:{i} {kv[0]} {kv[1]}");
                         }
-                        if (string.IsNullOrWhiteSpace(kv[1]))
-                        {
-                            // 没有内容，跳过
-                            continue;
-                        }
+                        //if (string.IsNullOrWhiteSpace(kv[1]))
+                        //{
+                        //    // 没有内容，跳过
+                        //    continue;
+                        //}
                         TermLine line = new TermLine();
                         line.Name = kv[0];
                         line.Texts = new string[1];
