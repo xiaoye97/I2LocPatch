@@ -9,6 +9,7 @@ using I2.Loc;
 using UnityEngine;
 using System.IO;
 using BepInEx.Configuration;
+using TMPro;
 
 namespace I2LocPatch
 {
@@ -16,6 +17,7 @@ namespace I2LocPatch
     public class I2LocPatchPlugin : BaseUnityPlugin
     {
         public static I2LocPatchPlugin Instance;
+        public ModLocalization ModLoc;
         public ConfigEntry<string> TargetLanguage;
         public ConfigEntry<bool> DevMode, DontLoadCsvOnDevMode;
         public ConfigEntry<bool> CommaSepWhenLoad;
@@ -23,10 +25,13 @@ namespace I2LocPatch
         void Awake()
         {
             Instance = this;
+            ModLoc = new ModLocalization();
+            ModLoc.LoadModLoc();
             DevMode = Config.Bind<bool>("Dev", "DevMode", false, "开发模式时，按下Ctrl+Keypad1进行Dump文本");
             DontLoadCsvOnDevMode = Config.Bind<bool>("Dev", "DontLoadCsvOnDevMode", true, "开发模式时，不自动加载翻译文本，而是使用Ctrl+Keypad2手动加载");
             TargetLanguage = Config.Bind<string>("config", "TargetLanguage", "Chinese", "目标语言");
             CommaSepWhenLoad = Config.Bind<bool>("config", "CommaSepWhenLoad", true, "在加载csv时使用逗号分隔而不是制表符");
+            Harmony.CreateAndPatchAll(typeof(I2LocPatchPlugin));
         }
 
         void Start()
@@ -51,6 +56,12 @@ namespace I2LocPatch
                     LoadCsv();
                 }
             }
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(TextMeshProUGUI), "OnEnable")]
+        public static void TextMeshProUGUIOnEnablePatch(TextMeshProUGUI __instance)
+        {
+            ModLocalization.Instance.FixTMPText(__instance);
         }
 
         public void LoadCsv()
@@ -79,19 +90,11 @@ namespace I2LocPatch
                                     {
                                         if (asset.SourceData.ContainsTerm(line.Name))
                                         {
-                                            var term = asset.SourceData.GetTermData(line.Name);
-                                            term.SetTranslation(index, line.Texts[0]);
+                                            SetTranslation(asset, line, index);
                                         }
                                         else
                                         {
-                                            TermData term = new TermData();
-                                            term.TermType = eTermType.Text;
-                                            List<string> languages = new List<string>();
-                                            for (int i = 0; i < langCount; i++)
-                                            {
-                                                languages.Add(line.Texts[i]);
-                                            }
-                                            term.Languages = languages.ToArray();
+                                            SetTranslation2(asset, line, langCount);
                                         }
                                     }
                                 }
@@ -103,6 +106,24 @@ namespace I2LocPatch
                     LogInfo($"LoadCsv加载完毕 耗时{sw.ElapsedMilliseconds}ms");
                 }
             }
+        }
+
+        private void SetTranslation(LanguageSourceAsset asset, TermLine line, int index)
+        {
+            var term = asset.SourceData.GetTermData(line.Name);
+            term.SetTranslation(index, line.Texts[0]);
+        }
+
+        private void SetTranslation2(LanguageSourceAsset asset, TermLine line, int langCount)
+        {
+            TermData term = asset.SourceData.AddTerm(line.Name);
+            term.TermType = eTermType.Text;
+            List<string> languages = new List<string>();
+            for (int i = 0; i < langCount; i++)
+            {
+                languages.Add(line.Texts[0]);
+            }
+            term.Languages = languages.ToArray();
         }
 
         public static void LogInfo(string log)
