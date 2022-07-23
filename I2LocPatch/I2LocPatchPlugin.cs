@@ -27,6 +27,7 @@ namespace I2LocPatch
             Instance = this;
             ModLoc = new ModLocalization();
             ModLoc.LoadModLoc();
+            ModLoc.LoadTextLoc();
             DevMode = Config.Bind<bool>("Dev", "DevMode", false, "开发模式时，按下Ctrl+Keypad1进行Dump文本");
             DontLoadCsvOnDevMode = Config.Bind<bool>("Dev", "DontLoadCsvOnDevMode", true, "开发模式时，不自动加载翻译文本，而是使用Ctrl+Keypad2手动加载");
             TargetLanguage = Config.Bind<string>("config", "TargetLanguage", "Chinese", "目标语言");
@@ -47,10 +48,12 @@ namespace I2LocPatch
         {
             if (DevMode.Value)
             {
+                // Ctrl + 小键盘1 Dump I2翻译表格
                 if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad1))
                 {
                     DumpAllLocRes();
                 }
+                // Ctrl + 小键盘2 加载 I2翻译表格
                 if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad2))
                 {
                     LoadCsv();

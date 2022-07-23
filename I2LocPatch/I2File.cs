@@ -9,7 +9,6 @@ namespace I2LocPatch
 {
     public class I2File
     {
-        public static char newLineChar = 'þ';
         // טּ
         public static char sep = '\t';
         public string Name;
@@ -42,11 +41,11 @@ namespace I2LocPatch
             // 写入数据
             foreach (var line in Lines)
             {
-                string key = line.Name.Replace('\n', newLineChar);
+                string key = line.Name.StrToI2Str();
                 sb.Append($"{key}{sep}");
                 for (int i = 0; i < langLen; i++)
                 {
-                    string text = line.Texts[i].Replace('\r', newLineChar).Replace('\n', newLineChar);
+                    string text = line.Texts[i].StrToI2Str();
                     sb.Append(text);
                     if (i < langLen - 1)
                     {
@@ -113,7 +112,7 @@ namespace I2LocPatch
                         TermLine line = new TermLine();
                         line.Name = kv[0];
                         line.Texts = new string[1];
-                        line.Texts[0] = kv[1].Replace(newLineChar, '\n');
+                        line.Texts[0] = kv[1].I2StrToStr();
                         i2File.Lines.Add(line);
                     }
                     I2LocPatchPlugin.LogInfo($"{path} 读取完毕，共{i2File.Lines.Count}条翻译");

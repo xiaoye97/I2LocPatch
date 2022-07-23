@@ -16,6 +16,7 @@ namespace I2LocPatch
     {
         public static ModLocalization Instance;
         public List<ModLocData> LocList = new List<ModLocData>();
+        public List<TextLocData> NormalTextList = new List<TextLocData>();
         public List<ModLocDataRuntime> LocRuntimeList = new List<ModLocDataRuntime>();
 
         /// <summary>
@@ -83,6 +84,14 @@ namespace I2LocPatch
             }
         }
 
+        /// <summary>
+        /// 加载文本对照翻译
+        /// </summary>
+        public void LoadTextLoc()
+        {
+            NormalTextList = TextLocData.LoadFromTxtFile($"{Paths.PluginPath}/I2LocPatch/NormalTextLoc.txt");
+        }
+
         private void CreateDefault(string path)
         {
             LocList = new List<ModLocData>();
@@ -117,7 +126,7 @@ namespace I2LocPatch
                     if (loc.Bind.Count == 1)
                     {
                         hasText = true;
-                        text = loc.Text;
+                        text = loc.Text.I2StrToStr();
                         break;
                     }
                     Transform p = tmp.transform.parent;
@@ -129,7 +138,7 @@ namespace I2LocPatch
                             if (i == loc.Bind.Count - 1)
                             {
                                 hasText = true;
-                                text = loc.Text;
+                                text = loc.Text.I2StrToStr();
                             }
                         }
                         else
@@ -142,6 +151,22 @@ namespace I2LocPatch
             if (hasText)
             {
                 tmp.text = text;
+            }
+            // 如果既没有翻译组件，也没有匹配的路径，则查找是否有文本对照翻译
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(tmp.text))
+                {
+                    string ori = tmp.text.StrToI2Str();
+                    foreach (var normal in NormalTextList)
+                    {
+                        if (ori == normal.Ori)
+                        {
+                            tmp.text = normal.Loc.I2StrToStr();
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
@@ -156,5 +181,21 @@ namespace I2LocPatch
     {
         public string Text;
         public List<string> Bind = new List<string>();
+    }
+
+    public static class TextEx
+    {
+        public static string newLineChar = "þ";
+        public static string StrToI2Str(this string str)
+        {
+            if (string.IsNullOrWhiteSpace(str)) return str;
+            return str.Replace("\n", newLineChar).Replace("\r", newLineChar);
+        }
+
+        public static string I2StrToStr(this string str)
+        {
+            if (string.IsNullOrWhiteSpace(str)) return str;
+            return str.Replace(newLineChar, "\n");
+        }
     }
 }

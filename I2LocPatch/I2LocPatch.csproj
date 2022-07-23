@@ -93,6 +93,7 @@
     <Compile Include="I2LocPatchPlugin.cs" />
     <Compile Include="ModLocalization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TextLocData.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
