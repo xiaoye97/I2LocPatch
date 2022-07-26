@@ -13,12 +13,13 @@ using TMPro;
 
 namespace I2LocPatch
 {
-    [BepInPlugin("xiaoye97.I2LocPatch", "I2LocPatch", "1.0.0")]
+    [BepInPlugin("xiaoye97.I2LocPatch", "I2LocPatch", "1.1.0")]
     public class I2LocPatchPlugin : BaseUnityPlugin
     {
         public static I2LocPatchPlugin Instance;
         public ModLocalization ModLoc;
         public ConfigEntry<string> TargetLanguage;
+        public ConfigEntry<string> TargetCsv;
         public ConfigEntry<bool> DevMode, DontLoadCsvOnDevMode;
         public ConfigEntry<bool> CommaSepWhenLoad;
 
@@ -31,6 +32,7 @@ namespace I2LocPatch
             DevMode = Config.Bind<bool>("Dev", "DevMode", false, "开发模式时，按下Ctrl+Keypad1进行Dump文本");
             DontLoadCsvOnDevMode = Config.Bind<bool>("Dev", "DontLoadCsvOnDevMode", true, "开发模式时，不自动加载翻译文本，而是使用Ctrl+Keypad2手动加载");
             TargetLanguage = Config.Bind<string>("config", "TargetLanguage", "Chinese", "目标语言");
+            TargetCsv = Config.Bind<string>("config", "TargetCsv", "", "目标csv文件，默认为空，如果不为空的话，则只会加载指定的csv文件");
             CommaSepWhenLoad = Config.Bind<bool>("config", "CommaSepWhenLoad", true, "在加载csv时使用逗号分隔而不是制表符");
             Harmony.CreateAndPatchAll(typeof(I2LocPatchPlugin));
         }
@@ -69,7 +71,7 @@ namespace I2LocPatch
 
         public void LoadCsv()
         {
-            var i2Files = LoadAllI2CsvSingleMode();
+            var i2Files = LoadAllI2CsvSingleMode(TargetCsv.Value);
             if (i2Files != null && i2Files.Count > 0)
             {
                 var mResourcesCache = Traverse.Create(ResourceManager.pInstance).Field("mResourcesCache").GetValue<Dictionary<string, UnityEngine.Object>>();
@@ -186,7 +188,7 @@ namespace I2LocPatch
         /// <summary>
         /// 加载所有的翻译后的CSV，搜索plugins/I2LocPatch文件夹
         /// </summary>
-        public List<I2File> LoadAllI2CsvSingleMode()
+        public List<I2File> LoadAllI2CsvSingleMode(string targetCsv = "")
         {
             try
             {
@@ -199,10 +201,13 @@ namespace I2LocPatch
                 List<I2File> i2Files = new List<I2File>();
                 for (int i = 0; i < files.Length; i++)
                 {
-                    I2File file = I2File.LoadFromCSVSingleMode(files[i].FullName);
-                    if (file != null)
+                    if (string.IsNullOrWhiteSpace(targetCsv) || files[i].Name == targetCsv)
                     {
-                        i2Files.Add(file);
+                        I2File file = I2File.LoadFromCSVSingleMode(files[i].FullName);
+                        if (file != null)
+                        {
+                            i2Files.Add(file);
+                        }
                     }
                 }
                 return i2Files;
