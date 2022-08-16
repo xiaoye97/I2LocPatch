@@ -171,12 +171,14 @@ namespace I2LocPatch
         }
     }
 
+    [System.Serializable]
     public class ModLocData
     {
         public string Text;
         public string Bind;
     }
 
+    [System.Serializable]
     public class ModLocDataRuntime
     {
         public string Text;

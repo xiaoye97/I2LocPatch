@@ -13,6 +13,20 @@ namespace I2LocPatch
         public string Ori;
         public string Loc;
 
+        public TextLocData()
+        { }
+
+        public TextLocData(string ori)
+        {
+            Ori = ori;
+        }
+
+        public TextLocData(string ori, string loc)
+        {
+            Ori = ori;
+            Loc = loc;
+        }
+
         public static List<TextLocData> LoadFromTxtFile(string path)
         {
             List<TextLocData> result = new List<TextLocData>();
@@ -65,6 +79,10 @@ namespace I2LocPatch
             {
                 var json = File.ReadAllText(path);
                 result = JsonConvert.DeserializeObject<List<TextLocData>>(json);
+                for (int i = 0; i < result.Count; i++)
+                {
+                    result[i].Loc = result[i].Loc.I2StrToStr();
+                }
             }
             return result;
         }

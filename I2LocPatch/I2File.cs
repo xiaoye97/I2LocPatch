@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Collections;
 
 namespace I2LocPatch
 {
@@ -21,6 +22,7 @@ namespace I2LocPatch
         /// <param name="path"></param>
         public void WriteCSVTable(string path)
         {
+            Lines.Sort();
             StringBuilder sb = new StringBuilder();
 
             // 写入表头
@@ -132,9 +134,14 @@ namespace I2LocPatch
         }
     }
 
-    public class TermLine
+    public class TermLine : IComparable
     {
         public string Name;
         public string[] Texts;
+
+        public int CompareTo(object obj)
+        {
+            return Name.CompareTo(((TermLine)obj).Name);
+        }
     }
 }
