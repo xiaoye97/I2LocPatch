@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -47,10 +48,8 @@
       <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Dinkum\BepInEx\core\BepInEx.Unity.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Dinkum\BepInEx\plugins\Newtonsoft.Json.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="LitJSON, Version=0.18.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\LitJson.0.18.0\lib\net45\LitJSON.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -92,9 +91,14 @@
   <ItemGroup>
     <Compile Include="I2File.cs" />
     <Compile Include="I2LocPatchPlugin.cs" />
+    <Compile Include="IJson.cs" />
+    <Compile Include="LitJsonHelper.cs" />
     <Compile Include="ModLocalization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TextLocData.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

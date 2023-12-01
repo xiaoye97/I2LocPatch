@@ -13,7 +13,7 @@ using TMPro;
 
 namespace I2LocPatch
 {
-    [BepInPlugin("xiaoye97.I2LocPatch", "I2LocPatch", "1.1.0")]
+    [BepInPlugin("xiaoye97.I2LocPatch", "I2LocPatch", "1.3.0")]
     public class I2LocPatchPlugin : BaseUnityPlugin
     {
         public static I2LocPatchPlugin Instance;
@@ -22,22 +22,38 @@ namespace I2LocPatch
         public ConfigEntry<string> TargetCsv;
         public ConfigEntry<bool> DevMode, DontLoadCsvOnDevMode;
         public ConfigEntry<bool> CommaSepWhenLoad;
+        public ConfigEntry<bool> ShowLocCall;
 
-        void Awake()
+        public static IJson Json
+        {
+            get
+            {
+                if (_json == null)
+                {
+                    _json = new LitJsonHelper();
+                }
+                return _json;
+            }
+        }
+
+        private static IJson _json;
+
+        private void Awake()
         {
             Instance = this;
-            ModLoc = new ModLocalization();
-            ModLoc.LoadModLoc();
-            ModLoc.LoadTextLoc();
             DevMode = Config.Bind<bool>("Dev", "DevMode", false, "开发模式时，按下Ctrl+Keypad1进行Dump文本");
             DontLoadCsvOnDevMode = Config.Bind<bool>("Dev", "DontLoadCsvOnDevMode", true, "开发模式时，不自动加载翻译文本，而是使用Ctrl+Keypad2手动加载");
             TargetLanguage = Config.Bind<string>("config", "TargetLanguage", "Chinese", "目标语言");
             TargetCsv = Config.Bind<string>("config", "TargetCsv", "", "目标csv文件，默认为空，如果不为空的话，则只会加载指定的csv文件");
             CommaSepWhenLoad = Config.Bind<bool>("config", "CommaSepWhenLoad", true, "在加载csv时使用逗号分隔而不是制表符");
+            ShowLocCall = Config.Bind<bool>("config", "ShowLocCall", false, "在控制台显示翻译的调用");
+            ModLoc = new ModLocalization();
+            ModLoc.LoadModLoc();
+            ModLoc.LoadTextLoc();
             Harmony.CreateAndPatchAll(typeof(I2LocPatchPlugin));
         }
 
-        void Start()
+        private void Start()
         {
             if (DevMode.Value && DontLoadCsvOnDevMode.Value)
             {
@@ -46,7 +62,7 @@ namespace I2LocPatch
             Invoke("LoadCsv", 1f);
         }
 
-        void Update()
+        private void Update()
         {
             if (DevMode.Value)
             {
@@ -67,6 +83,15 @@ namespace I2LocPatch
         public static void TextMeshProUGUIOnEnablePatch(TextMeshProUGUI __instance)
         {
             ModLocalization.Instance.FixTMPText(__instance);
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(LocalizationManager), "GetTranslation")]
+        public static void LocalizationManager_GetTranslation_Patch(string Term, string __result)
+        {
+            if (Instance.ShowLocCall.Value)
+            {
+                LogInfo($"调用翻译:Key: {Term} \t结果: {__result}");
+            }
         }
 
         public void LoadCsv()
@@ -141,7 +166,7 @@ namespace I2LocPatch
             Instance.Logger.LogError(log);
         }
 
-        public void DumpAllLocRes()
+        public void DumpAllLocRes(List<string> ignoreTermList = null)
         {
             var mResourcesCache = Traverse.Create(ResourceManager.pInstance).Field("mResourcesCache").GetValue<Dictionary<string, UnityEngine.Object>>();
             if (mResourcesCache != null)
@@ -151,14 +176,14 @@ namespace I2LocPatch
                     // 语言资源
                     if (kv.Value != null && kv.Value is LanguageSourceAsset)
                     {
-                        DumpLocRes(kv.Value as LanguageSourceAsset);
+                        DumpLocRes(kv.Value as LanguageSourceAsset, ignoreTermList);
                     }
                 }
             }
             LogInfo($"全部Dump完毕");
         }
 
-        public void DumpLocRes(LanguageSourceAsset asset)
+        public void DumpLocRes(LanguageSourceAsset asset, List<string> ignoreTermList = null)
         {
             I2File i2File = new I2File();
             i2File.Name = asset.name;
@@ -174,6 +199,10 @@ namespace I2LocPatch
                     {
                         continue;
                     }
+                    if (ignoreTermList != null && ignoreTermList.Contains(term.Term))
+                    {
+                        continue;
+                    }
                     TermLine line = new TermLine();
                     line.Name = term.Term;
                     line.Texts = term.Languages;
@@ -182,7 +211,7 @@ namespace I2LocPatch
             }
             //i2File.WriteTest($"{Paths.GameRootPath}/I2/Test.txt");
             i2File.WriteCSVTable($"{Paths.GameRootPath}/I2/{i2File.Name}.csv");
-            LogInfo($"Dump {i2File.Name}完毕");
+            LogInfo($"Dump {i2File.Name}完毕 共{i2File.Lines.Count}条");
         }
 
         /// <summary>

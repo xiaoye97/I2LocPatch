@@ -3,9 +3,8 @@ using I2.Loc;
 using BepInEx;
 using System.IO;
 using UnityEngine;
-using Newtonsoft.Json;
 using System.Collections.Generic;
-
+using System;
 
 namespace I2LocPatch
 {
@@ -48,7 +47,14 @@ namespace I2LocPatch
             else
             {
                 string json = File.ReadAllText(path);
-                LocList = JsonConvert.DeserializeObject<List<ModLocData>>(json);
+                try
+                {
+                    LocList = I2LocPatchPlugin.Json.FromJson<List<ModLocData>>(json);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning(ex);
+                }
                 if (LocList == null)
                 {
                     CreateDefault(path);
@@ -99,7 +105,7 @@ namespace I2LocPatch
             data.Text = "Text";
             data.Bind = "BindPath";
             LocList.Add(data);
-            string json = JsonConvert.SerializeObject(LocList, Formatting.Indented);
+            string json = I2LocPatchPlugin.Json.ToJson(LocList, true);
             File.WriteAllText(path, json);
         }
 
@@ -188,6 +194,7 @@ namespace I2LocPatch
     public static class TextEx
     {
         public static string newLineChar = "þ";
+
         public static string StrToI2Str(this string str)
         {
             if (string.IsNullOrWhiteSpace(str)) return str;

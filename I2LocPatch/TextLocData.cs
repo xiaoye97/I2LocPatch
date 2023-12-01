@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using Newtonsoft.Json;
+using UnityEngine;
 
 namespace I2LocPatch
 {
+    [Serializable]
     public class TextLocData
     {
         public string Ori;
@@ -73,12 +74,24 @@ namespace I2LocPatch
                     fileInfo.Directory.Create();
                 }
                 result.Add(new TextLocData() { Ori = "TextLocDataOri", Loc = "TextLocDataLoc" });
-                File.WriteAllText(path, JsonConvert.SerializeObject(result, Formatting.Indented));
+                File.WriteAllText(path, I2LocPatchPlugin.Json.ToJson(result, true));
+                //File.WriteAllText(path, JsonUtility.ToJson(result, true));
+                //File.WriteAllText(path, JsonConvert.SerializeObject(result, Formatting.Indented));
             }
             else
             {
                 var json = File.ReadAllText(path);
-                result = JsonConvert.DeserializeObject<List<TextLocData>>(json);
+                try
+                {
+                    result = I2LocPatchPlugin.Json.FromJson<List<TextLocData>>(json);
+                    //result = JsonUtility.FromJson<List<TextLocData>>(json);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning(ex);
+                }
+
+                //result = JsonConvert.DeserializeObject<List<TextLocData>>(json);
                 for (int i = 0; i < result.Count; i++)
                 {
                     result[i].Loc = result[i].Loc.I2StrToStr();

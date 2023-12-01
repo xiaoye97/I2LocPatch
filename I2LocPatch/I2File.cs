@@ -102,9 +102,14 @@ namespace I2LocPatch
                         if (string.IsNullOrWhiteSpace(lines[i])) continue;
                         var kv = lines[i].Split(new char[] { loadSep }, 2);
                         if (kv.Length != 2) continue;
-                        if (I2LocPatchPlugin.Instance.DevMode.Value)
+                        //if (I2LocPatchPlugin.Instance.DevMode.Value)
+                        //{
+                        //    I2LocPatchPlugin.LogInfo($"index:{i} {kv[0]} {kv[1]}");
+                        //}
+                        if (string.IsNullOrWhiteSpace(kv[0]))
                         {
-                            I2LocPatchPlugin.LogInfo($"index:{i} {kv[0]} {kv[1]}");
+                            // 没有key，跳过
+                            continue;
                         }
                         if (string.IsNullOrWhiteSpace(kv[1]))
                         {
