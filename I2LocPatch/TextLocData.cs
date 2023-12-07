@@ -104,7 +104,7 @@ namespace I2LocPatch
         {
             foreach (var loc in list)
             {
-                if (loc.Ori == ori)
+                if (loc.Ori == ori || loc.Ori.StrToI2Str() == ori.StrToI2Str())
                 {
                     return loc.Loc;
                 }
