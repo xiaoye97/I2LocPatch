@@ -13,7 +13,7 @@ using TMPro;
 
 namespace I2LocPatch
 {
-    [BepInPlugin("xiaoye97.I2LocPatch", "I2LocPatch", "1.3.0")]
+    [BepInPlugin("xiaoye97.I2LocPatch", "I2LocPatch", "1.4.0")]
     public class I2LocPatchPlugin : BaseUnityPlugin
     {
         public static I2LocPatchPlugin Instance;
@@ -131,7 +131,7 @@ namespace I2LocPatch
                             }
                         }
                     }
-                    LocalizationManager.CurrentLanguage = "Chinese";
+                    LocalizationManager.CurrentLanguage = TargetLanguage.Value;
                     sw.Stop();
                     LogInfo($"LoadCsv加载完毕 耗时{sw.ElapsedMilliseconds}ms");
                 }
